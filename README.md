@@ -1,1 +1,2 @@
-"# UnityMQTTClient" 
+Dependencias:
+  Unity Image Cores
