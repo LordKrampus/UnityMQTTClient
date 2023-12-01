@@ -6,8 +6,9 @@ using UnityEngine;
 
 using uPLibrary.Networking.M2Mqtt.Messages;
 
-using OCR.TextureEnhancement;
-using MRModels;
+using ReferenceModels;
+using Utils;
+using System.Collections;
 
 namespace MQTT.Models
 {
@@ -18,32 +19,54 @@ namespace MQTT.Models
         [Header("Stream")]
         [SerializeField]
         private RawImage display;
+        private Texture2D _texture;
+
 
         public override string[] Topics => TOPICS;
 
+        private bool _isListenning = true;
+        private Coroutine _curCoroutine;
         public override void ProcessMessage(string topic, string message)
         {
-            MRModels.Image img;
+            if (!this._isListenning)
+                return;
+
+            this._isListenning = false;
+            this._curCoroutine = this.StartCoroutine(this.Listenning(topic, message));
+        }
+
+        private void StopListenning()
+        {
+            this._isListenning = true;
+            this.StopCoroutine(this._curCoroutine);
+        }
+
+        private IEnumerator Listenning(string topic, string message)
+        {
+            yield return new WaitForEndOfFrame();
+
+            ReferenceModels.Image img = null;
             try
             {
-                img = UnityEngine.JsonUtility.FromJson<MRModels.Image>(message);
-            }catch(Exception e)
+                img = UnityEngine.JsonUtility.FromJson<ReferenceModels.Image>(message);
+            }
+            catch (Exception e)
             {
                 Debug.Log("MQTT ${topic} ERROR:\tnão é possível converter uma mensagem recebida.");
-                return;
+                this.StopListenning();
             }
             Debug.Log($"MQTT ${topic} RECEIVE:\n{img.ToString()}.");
-            //Debug.Log(img.GetBytes());
 
-            Color32[] colors;
-            Utilities.TextureUtilities.BytesToColors(img.Width, img.Height, img.GetBytes(), out colors);
-            Texture2D imgTexture = new Texture2D(img.Width, img.Height);
-            imgTexture.SetPixels32(colors);
+            if(this._texture.width != img.Width || this._texture.height != img.Height)
+            {
+                this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, img.Width, img.Height);
+            }
+            this._texture.LoadImage(img.ImgBytes);
+            this._texture.Apply();
 
-            //imgTexture.LoadImage(img.ImgBytes);
-            imgTexture.Apply();
-
-            display.texture = imgTexture;
+            display.texture = this._texture;
+            yield return new WaitForEndOfFrame();
+            this._isListenning = true;
         }
 
         public override void OnClientSetup()
@@ -57,6 +80,8 @@ namespace MQTT.Models
         protected override void Awake()
         {
             base.Awake();
+
+            this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, 1, 1);
         }
 
     }

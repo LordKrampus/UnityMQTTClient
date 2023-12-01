@@ -6,7 +6,7 @@ using UnityEngine;
 
 using uPLibrary.Networking.M2Mqtt.Messages;
 
-using MRModels;
+using ReferenceModels;
 
 namespace MQTT.Models
 {
@@ -35,8 +35,8 @@ namespace MQTT.Models
             Debug.Log($"MQTT ${topic} RECEIVE:\n{ort.ToString()}.");
             //Debug.Log(img.GetBytes());
 
-            this.rvAvatar.transform.position = ort.Position;
-            this.rvAvatar.transform.rotation = Quaternion.Euler(ort.Rotation.x, ort.Rotation.y, ort.Rotation.z);
+            this.rvAvatar.transform.localPosition = ort.Position;
+            //this.rvAvatar.transform.rotation = ort.Rotation;
         }
 
         public override void OnClientSetup()

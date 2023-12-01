@@ -3,7 +3,7 @@ using System.Linq;
 
 using UnityEngine;
 
-namespace MRModels
+namespace ReferenceModels
 {
     [System.Serializable]
     public class Orientation
@@ -19,13 +19,13 @@ namespace MRModels
             set => this._position = new float[] { value.x, value.y, value.z };
         }
 
-        public Vector3 Rotation
+        public Quaternion Rotation
         {
-            get => new Vector3(this._rotation[0], this._rotation[1], this._rotation[2]);
-            set => this._rotation = new float[] { value.x, value.y, value.z };
+            get => new Quaternion(this._rotation[0], this._rotation[1], this._rotation[2], this._rotation[2]);
+            set => this._rotation = new float[] { value.x, value.y, value.z, value.w };
         }
 
-        public Orientation(Vector3 position, Vector3 rotation)
+        public Orientation(Vector3 position, Quaternion rotation)
         {
             this.Position = position;
             this.Rotation = rotation;
