@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
 
-using OCR.TextureEnhancement;
-using MRModels;
+using ReferenceModels;
+using ImageCores.TextureEnhancement;
+using Utils;
 
 namespace MQTT.Models 
 {
@@ -18,11 +20,15 @@ namespace MQTT.Models
         private Camera cam;
         private WebCamDevice wcam;
         private RenderTexture _render;
+        private RenderTexture _outTexture;
+        private Texture2D _texture;
 
         [Header("Quality")]
         [SerializeField]
         private int xResolution;
+        [SerializeField]
         private RescaleEnhancement _scaler;
+        private CopyEnhancement _copier;
 
         [Header("[deprecated] Stream")]
         [SerializeField]
@@ -45,57 +51,77 @@ namespace MQTT.Models
                 Debug.Log("Error raise on Inspector - object(s) reference(s) needed.");
 
             this._render = null;
+            Utils.TextureUtility.ReinitializeTexture(ref this._outTexture, 1, 1, true);
+            this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, 1, 1);
 
-            this._scaler = new RescaleEnhancement();
             this._scaler.TargedWidth = this.xResolution;
+            this._copier = new CopyEnhancement();
         }
 
-        private void UpdateRender()
+        private bool _isStreaming = false;
+        private void LateUpdate()
+        {
+            if (this._isStreaming)
+                return;
+
+            this._isStreaming = true;
+            this.StartCoroutine(this.StreamFrame());
+        }
+
+        private IEnumerator StreamFrame()
         {
             int width = this.cam.pixelWidth,
-                height = this.cam.pixelHeight;
+                          height = this.cam.pixelHeight;
+            yield return new WaitForEndOfFrame();
 
-            //this.StartCoroutine(this.UpdateRender(width, height));
-
+            // obtem imagem da camera em um renderer
             this._render = new RenderTexture(width, height, 32);
             this.cam.targetTexture = this._render;
             this.cam.Render();
-
             this.cam.targetTexture = null;
-        }
 
-        private void LateUpdate()
-        {
-            if (this._render != null)
-                return;
+            this._scaler.TargedWidth = this.xResolution;
+            this._scaler.TargedHeight = this.xResolution * height / width;
+            if (this._outTexture.width != this._scaler.TargedWidth || this._outTexture.height != this._scaler.TargedHeight) {
+                Utils.TextureUtility.ReinitializeTexture(ref this._outTexture, this._scaler.TargedWidth, this._scaler.TargedHeight, true);
+                this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, this._scaler.TargedWidth, this._scaler.TargedHeight);
+            }
+            Graphics.Blit(this._scaler.Enhance(this._render), this._outTexture);
+            yield return new WaitForEndOfFrame();
 
-            this.UpdateRender();
+            if (base.MQTTCC.IsConnected)
+            {
+                RenderTexture.active = this._outTexture;
+                this._texture.ReadPixels(new Rect(0, 0, this._outTexture.width, this._outTexture.height), 0, 0);
+                RenderTexture.active = null;
+                byte[] bytesColors = _texture.EncodeToJPG();
 
-            int width = this._render.width,
-                height = this._render.height;
-
-            Texture2D cTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
-
-            RenderTexture.active = this._render;
-            cTexture.ReadPixels(new Rect(0, 0, this._render.width, this._render.height), 0, 0);
-            RenderTexture.active = null;
-            this._render = null;
-
-            // ajusta escala
-            this._scaler.Enhance(ref cTexture);
-            width = cTexture.width;
-            height = cTexture.height;
-
-            //cTexture.Apply();
-            //this.display.texture = cTexture;
-
-            if (base.MQTTCC.IsConnected) {
-                byte[] byteColors;
-                Utilities.TextureUtilities.ColorsToBytes(width, height, cTexture.GetPixels32(), out byteColors);
-                MRModels.Image img = new MRModels.Image(byteColors, width, height);
+                ReferenceModels.Image img = new ReferenceModels.Image(bytesColors, this._outTexture.width, this._outTexture.height);
                 this.PublishMessage(this.Topics[0], UnityEngine.JsonUtility.ToJson(img, true));
             }
-
+            yield return new WaitForEndOfFrame();
+            this._isStreaming = false;
         }
     }
 }
+
+
+
+
+/*
+          // textura 2D da imagem do renderer
+          Texture2D cTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
+          RenderTexture.active = this._render;
+          cTexture.ReadPixels(new Rect(0, 0, this._render.width, this._render.height), 0, 0);
+          RenderTexture.active = null;
+          this._render = null;
+          yield return new WaitForEndOfFrame();
+
+          // ajusta escala
+          //byte[] new_bytes, bytes = cTexture.EncodeToPNG();
+          //this._scaler.Enhance(ref bytes, width, height, width * height  * 4, out new_bytes);
+          this._scaler.Enhance(ref cTexture);
+          width = this._scaler.TargedWidth;
+          height = this._scaler.TargedHeight;
+          yield return new WaitForEndOfFrame();
+          */

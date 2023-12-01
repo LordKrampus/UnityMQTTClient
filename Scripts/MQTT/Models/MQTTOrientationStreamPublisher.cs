@@ -4,8 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-using MRModels;
-using OCR.TextureEnhancement;
+using ReferenceModels;
 
 namespace MQTT.Models
 {
@@ -38,12 +37,16 @@ namespace MQTT.Models
             {
                 Transform playerT = player.transform;
                 Vector3 position = playerT.position;
-                Vector3 rotation = playerT.rotation.eulerAngles;
+                Quaternion rotation = playerT.rotation;
 
                 Orientation ort = new Orientation(position, rotation);
-                this.PublishMessage(this.Topics[0], UnityEngine.JsonUtility.ToJson(ort, true));
+                this.PublishMessage(ort);
             }
+        }
 
+        protected virtual void PublishMessage(Orientation ort)
+        {
+            this.PublishMessage(this.Topics[0], UnityEngine.JsonUtility.ToJson(ort, true));
         }
     }
 }
