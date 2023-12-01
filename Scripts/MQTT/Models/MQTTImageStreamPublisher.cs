@@ -50,7 +50,7 @@ namespace MQTT.Models
             if (this.cam == null || this.display == null)
                 Debug.Log("Error raise on Inspector - object(s) reference(s) needed.");
 
-            this._render = null;
+            Utils.TextureUtility.ReinitializeTexture(ref this._render, this.cam.pixelWidth, this.cam.pixelHeight, true);
             Utils.TextureUtility.ReinitializeTexture(ref this._outTexture, 1, 1, true);
             this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, 1, 1);
 
@@ -75,7 +75,6 @@ namespace MQTT.Models
             yield return new WaitForEndOfFrame();
 
             // obtem imagem da camera em um renderer
-            this._render = new RenderTexture(width, height, 32);
             this.cam.targetTexture = this._render;
             this.cam.Render();
             this.cam.targetTexture = null;
