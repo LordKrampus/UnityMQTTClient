@@ -106,9 +106,9 @@ namespace MQTT.Models
                 this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, this._scaler.TargedWidth, this._scaler.TargedHeight);
             }
             Graphics.Blit(this._scaler.Enhance(this._render), this._outTexture);
-#if UNITY_EDITOR 
+//#if UWP
             yield return new WaitForEndOfFrame();
-#endif
+//#endif
             if (base.MQTTCC.IsConnected)
             {
                 RenderTexture.active = this._outTexture;
@@ -120,9 +120,9 @@ namespace MQTT.Models
                 this.PublishMessage(this.Topics[0], UnityEngine.JsonUtility.ToJson(img, true));
             }
 
-#if UNITY_EDITOR
+//#if UWP
             yield return new WaitForEndOfFrame();
-#endif
+//#endif
             this.TimeCount = Time.unscaledTime;
             //Debug.Log(Time.unscaledTime - timeStart);
             this._isStreaming = false;
