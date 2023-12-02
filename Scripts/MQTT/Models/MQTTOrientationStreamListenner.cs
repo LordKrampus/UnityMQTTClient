@@ -35,8 +35,8 @@ namespace MQTT.Models
             Debug.Log($"MQTT ${topic} RECEIVE:\n{ort.ToString()}.");
             //Debug.Log(img.GetBytes());
 
-            this.rvAvatar.transform.localPosition = ort.Position;
-            //this.rvAvatar.transform.rotation = ort.Rotation;
+            this.rvAvatar.transform.position = ort.Position;
+            this.rvAvatar.transform.localRotation = ort.Rotation;
         }
 
         public override void OnClientSetup()

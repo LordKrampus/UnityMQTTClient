@@ -37,7 +37,7 @@ namespace MQTT.Models
             {
                 Transform playerT = player.transform;
                 Vector3 position = playerT.position;
-                Quaternion rotation = playerT.rotation;
+                Quaternion rotation = playerT.localRotation;
 
                 Orientation ort = new Orientation(position, rotation);
                 this.PublishMessage(ort);

@@ -19,6 +19,10 @@ namespace MQTT {
         [SerializeReference] 
         private List<MQTTEntity> queueOnClientSetup = new List<MQTTEntity>();
 
+        [Header("Log")]
+        [SerializeField]
+        private UnityEngine.UI.Text status;
+
         public override string[] Topics => MQTT_TOPICS;
 
         public override void ProcessMessage(string topic, string message)
@@ -60,6 +64,11 @@ namespace MQTT {
                 entity.OnClientSetup();
             }
             //this.queueOnClientSetup.Clear();
+        }
+
+        private void LateUpdate()
+        {
+            this.status.text = base.MQTTCC.IsConnected? "connected" : "not-connected";
         }
 
     }

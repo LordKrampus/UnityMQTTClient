@@ -21,7 +21,7 @@ namespace ReferenceModels
 
         public Quaternion Rotation
         {
-            get => new Quaternion(this._rotation[0], this._rotation[1], this._rotation[2], this._rotation[2]);
+            get => new Quaternion(this._rotation[0], this._rotation[1], this._rotation[2], this._rotation[3]);
             set => this._rotation = new float[] { value.x, value.y, value.z, value.w };
         }
 
