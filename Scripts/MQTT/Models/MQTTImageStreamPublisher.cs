@@ -83,54 +83,18 @@ namespace MQTT.Models
         {
             if (this._isStreaming)
                 return;
-            //this._isStreaming = true;
 
-            int width = this.cam.pixelWidth,
-                          height = this.cam.pixelHeight;
-            //yield return new WaitForEndOfFrame();
-
-            // obtem imagem da camera em um renderer
-            this.cam.targetTexture = this._render;
-            this.cam.Render();
-            this.cam.targetTexture = null;
-
-            this._scaler.TargedWidth = this.xResolution;
-            this._scaler.TargedHeight = this.xResolution * height / width;
-            if (this._outTexture.width != this._scaler.TargedWidth || this._outTexture.height != this._scaler.TargedHeight)
-            {
-                Utils.TextureUtility.ReinitializeTexture(ref this._outTexture, this._scaler.TargedWidth, this._scaler.TargedHeight, true);
-                this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, this._scaler.TargedWidth, this._scaler.TargedHeight);
-            }
-            Graphics.Blit(this._scaler.Enhance(this._render), this._outTexture);
-            //yield return new WaitForEndOfFrame();
-
-            if (base.MQTTCC.IsConnected)
-            {
-                RenderTexture.active = this._outTexture;
-                this._texture.ReadPixels(new Rect(0, 0, this._outTexture.width, this._outTexture.height), 0, 0);
-                RenderTexture.active = null;
-                byte[] bytesColors = _texture.EncodeToJPG();
-
-                ReferenceModels.Image img = new ReferenceModels.Image(bytesColors, this._outTexture.width, this._outTexture.height);
-                this.PublishMessage(this.Topics[0], UnityEngine.JsonUtility.ToJson(img, true));
-            }
-            //yield return new WaitForEndOfFrame();
-
-            this.TimeCount = Time.unscaledTime;
-            //yield return new WaitForSeconds(0.1f);
-            Debug.Log(Time.unscaledTime - timeStart);
-
-            this._isStreaming = false;
-
-            //this.StartCoroutine(this.StreamFrame());
+            this._isStreaming = true;
+            this.StartCoroutine(this.StreamFrame());
         }
 
         private IEnumerator StreamFrame()
         {
             int width = this.cam.pixelWidth,
                           height = this.cam.pixelHeight;
-            //yield return new WaitForEndOfFrame();
-
+#if UNITY_EDITOR 
+            yield return new WaitForEndOfFrame();
+#endif
             // obtem imagem da camera em um renderer
             this.cam.targetTexture = this._render;
             this.cam.Render();
@@ -143,8 +107,9 @@ namespace MQTT.Models
                 this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, this._scaler.TargedWidth, this._scaler.TargedHeight);
             }
             Graphics.Blit(this._scaler.Enhance(this._render), this._outTexture);
-            //yield return new WaitForEndOfFrame();
-
+#if UNITY_EDITOR 
+            yield return new WaitForEndOfFrame();
+#endif
             if (base.MQTTCC.IsConnected)
             {
                 RenderTexture.active = this._outTexture;
@@ -155,12 +120,13 @@ namespace MQTT.Models
                 ReferenceModels.Image img = new ReferenceModels.Image(bytesColors, this._outTexture.width, this._outTexture.height);
                 this.PublishMessage(this.Topics[0], UnityEngine.JsonUtility.ToJson(img, true));
             }
-            //yield return new WaitForEndOfFrame();
 
+#if UNITY_EDITOR
+            yield return new WaitForEndOfFrame();
+#endif
             this.TimeCount = Time.unscaledTime;
-            yield return new WaitForSeconds(0.1f);
-            Debug.Log(Time.unscaledTime - timeStart);
-            //this._isStreaming = false;
+            //Debug.Log(Time.unscaledTime - timeStart);
+            this._isStreaming = false;
         }
     }
 }

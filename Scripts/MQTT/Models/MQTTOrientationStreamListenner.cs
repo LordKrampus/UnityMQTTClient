@@ -14,6 +14,9 @@ namespace MQTT.Models
     {
         private static string[] TOPICS = new string[] { "device/holo/orientation" };
 
+        protected Vector3 position = Vector3.zero;
+        protected Quaternion rotation = Quaternion.identity;
+
         [Header("Stream")]
         [SerializeField]
         private GameObject rvAvatar;
@@ -35,8 +38,11 @@ namespace MQTT.Models
             Debug.Log($"MQTT ${topic} RECEIVE:\n{ort.ToString()}.");
             //Debug.Log(img.GetBytes());
 
-            this.rvAvatar.transform.position = ort.Position;
-            this.rvAvatar.transform.localRotation = ort.Rotation;
+            //this.rvAvatar.transform.position = ort.Position;
+            //this.rvAvatar.transform.localRotation = ort.Rotation;
+
+            this.position = ort.Position;
+            this.rotation = ort.Rotation;
         }
 
         public override void OnClientSetup()
@@ -52,5 +58,8 @@ namespace MQTT.Models
             base.Awake();
         }
 
+        protected virtual void Update()
+        {
+        }
     }
 }

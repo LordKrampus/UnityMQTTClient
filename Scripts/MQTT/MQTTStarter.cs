@@ -68,6 +68,7 @@ namespace MQTT {
 
         private void LateUpdate()
         {
+            if(this.status != null)
             this.status.text = base.MQTTCC.IsConnected? "connected" : "not-connected";
         }
 
