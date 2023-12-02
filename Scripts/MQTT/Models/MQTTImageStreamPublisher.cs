@@ -92,9 +92,8 @@ namespace MQTT.Models
         {
             int width = this.cam.pixelWidth,
                           height = this.cam.pixelHeight;
-#if UNITY_EDITOR 
             yield return new WaitForEndOfFrame();
-#endif
+
             // obtem imagem da camera em um renderer
             this.cam.targetTexture = this._render;
             this.cam.Render();
