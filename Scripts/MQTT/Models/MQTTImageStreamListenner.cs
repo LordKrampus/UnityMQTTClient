@@ -59,7 +59,7 @@ namespace MQTT.Models
 
             if(this._texture.width != img.Width || this._texture.height != img.Height)
             {
-                this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, img.Width, img.Height);
+                this._texture = ImageCores.Utils.TextureUtil.ReinitializeTexture(this._texture, img.Width, img.Height);
             }
             this._texture.LoadImage(img.ImgBytes);
             this._texture.Apply();
@@ -81,7 +81,7 @@ namespace MQTT.Models
         {
             base.Awake();
 
-            this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, 1, 1);
+            this._texture = ImageCores.Utils.TextureUtil.ReinitializeTexture(this._texture, 1, 1);
         }
 
     }

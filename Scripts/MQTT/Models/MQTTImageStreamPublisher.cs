@@ -29,7 +29,7 @@ namespace MQTT.Models
         private int xResolution;
         [SerializeField]
         private RescaleEnhancement _scaler;
-        private CopyEnhancement _copier;
+        //private CopyEnhancement _copier;
 
         [Header("Log")]
         [SerializeField]
@@ -70,12 +70,12 @@ namespace MQTT.Models
             if (this.cam == null || this.display == null)
                 Debug.Log("Error raise on Inspector - object(s) reference(s) needed.");
 
-            Utils.TextureUtility.ReinitializeTexture(ref this._render, this.cam.pixelWidth, this.cam.pixelHeight, true);
-            Utils.TextureUtility.ReinitializeTexture(ref this._outTexture, 1, 1, true);
-            this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, 1, 1);
+            ImageCores.Utils.TextureUtil.ReinitializeTexture(ref this._render, this.cam.pixelWidth, this.cam.pixelHeight, true);
+            ImageCores.Utils.TextureUtil.ReinitializeTexture(ref this._outTexture, 1, 1, true);
+            this._texture = ImageCores.Utils.TextureUtil.ReinitializeTexture(this._texture, 1, 1);
 
             this._scaler.TargedWidth = this.xResolution;
-            this._copier = new CopyEnhancement();
+            //this._copier = new CopyEnhancement();
         }
 
         private bool _isStreaming = false;
@@ -102,13 +102,12 @@ namespace MQTT.Models
             this._scaler.TargedWidth = this.xResolution;
             this._scaler.TargedHeight = this.xResolution * height / width;
             if (this._outTexture.width != this._scaler.TargedWidth || this._outTexture.height != this._scaler.TargedHeight) {
-                Utils.TextureUtility.ReinitializeTexture(ref this._outTexture, this._scaler.TargedWidth, this._scaler.TargedHeight, true);
-                this._texture = Utils.TextureUtility.ReinitializeTexture(this._texture, this._scaler.TargedWidth, this._scaler.TargedHeight);
+                ImageCores.Utils.TextureUtil.ReinitializeTexture(ref this._outTexture, this._scaler.TargedWidth, this._scaler.TargedHeight, true);
+                this._texture = ImageCores.Utils.TextureUtil.ReinitializeTexture(this._texture, this._scaler.TargedWidth, this._scaler.TargedHeight);
             }
             Graphics.Blit(this._scaler.Enhance(this._render), this._outTexture);
-//#if UWP
             yield return new WaitForEndOfFrame();
-//#endif
+
             if (base.MQTTCC.IsConnected)
             {
                 RenderTexture.active = this._outTexture;
@@ -119,10 +118,8 @@ namespace MQTT.Models
                 ReferenceModels.Image img = new ReferenceModels.Image(bytesColors, this._outTexture.width, this._outTexture.height);
                 this.PublishMessage(this.Topics[0], UnityEngine.JsonUtility.ToJson(img, true));
             }
-
-//#if UWP
             yield return new WaitForEndOfFrame();
-//#endif
+
             this.TimeCount = Time.unscaledTime;
             //Debug.Log(Time.unscaledTime - timeStart);
             this._isStreaming = false;
