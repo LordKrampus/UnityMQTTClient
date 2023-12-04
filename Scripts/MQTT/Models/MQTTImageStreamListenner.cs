@@ -7,7 +7,6 @@ using UnityEngine;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
 using ReferenceModels;
-using Utils;
 using System.Collections;
 
 namespace MQTT.Models
