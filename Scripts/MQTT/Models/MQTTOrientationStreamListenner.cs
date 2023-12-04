@@ -14,6 +14,8 @@ namespace MQTT.Models
     {
         private static string[] TOPICS = new string[] { "device/holo/orientation" };
 
+        private Action _processors;
+
         protected Vector3 position = Vector3.zero;
         protected Quaternion rotation = Quaternion.identity;
 
@@ -22,6 +24,16 @@ namespace MQTT.Models
         private GameObject rvAvatar;
 
         public override string[] Topics => TOPICS;
+        public Vector3 Position => this.position;
+        public Quaternion Rotation = Quaternion.identity;
+
+        public Action Processors
+        {
+            set => this._processors += value;
+        }
+
+        public delegate void Action(ReferenceModels.Orientation img);
+
 
         public override void ProcessMessage(string topic, string message)
         {
@@ -36,13 +48,16 @@ namespace MQTT.Models
                 return;
             }
             Debug.Log($"MQTT ${topic} RECEIVE:\n{ort.ToString()}.");
+
+            this._processors?.Invoke(ort);
+            
             //Debug.Log(img.GetBytes());
 
             //this.rvAvatar.transform.position = ort.Position;
             //this.rvAvatar.transform.localRotation = ort.Rotation;
 
-            this.position = ort.Position;
-            this.rotation = ort.Rotation;
+            //this.position = ort.Position;
+            //this.rotation = ort.Rotation;
         }
 
         public override void OnClientSetup()

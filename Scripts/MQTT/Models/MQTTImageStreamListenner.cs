@@ -15,16 +15,25 @@ namespace MQTT.Models
     {
         private static string[] TOPICS = new string[] { "device/holo/image" };
 
+        private Action _processors;
+
+        // deprecated
         [Header("Stream")]
         [SerializeField]
         private RawImage display;
         private Texture2D _texture;
 
-
-        public override string[] Topics => TOPICS;
-
         private bool _isListenning = true;
         private Coroutine _curCoroutine;
+
+        public override string[] Topics => TOPICS;
+        public Action Processors
+        {
+            set => this._processors += value;
+        }
+
+        public delegate void Action(ReferenceModels.Image img);
+
         public override void ProcessMessage(string topic, string message)
         {
             if (!this._isListenning)
@@ -56,16 +65,19 @@ namespace MQTT.Models
             }
             Debug.Log($"MQTT ${topic} RECEIVE:\n{img.ToString()}.");
 
-            if(this._texture.width != img.Width || this._texture.height != img.Height)
-            {
-                this._texture = ImageCores.Utils.TextureUtil.ReinitializeTexture(this._texture, img.Width, img.Height);
-            }
-            this._texture.LoadImage(img.ImgBytes);
-            this._texture.Apply();
-
-            display.texture = this._texture;
-            yield return new WaitForEndOfFrame();
+            this._processors?.Invoke(img);
             this._isListenning = true;
+
+            //if(this._texture.width != img.Width || this._texture.height != img.Height)
+            //{
+            //    this._texture = ImageCores.Utils.TextureUtil.ReinitializeTexture(this._texture, img.Width, img.Height);
+            //}
+            //this._texture.LoadImage(img.ImgBytes);
+            //this._texture.Apply();
+            //
+            //display.texture = this._texture;
+            //yield return new WaitForEndOfFrame();
+            //this._isListenning = true;
         }
 
         public override void OnClientSetup()
