@@ -114,7 +114,6 @@ namespace MQTT.Models
 
                 ReferenceModels.Image img = new ReferenceModels.Image(bytesColors, this._outTexture.width, this._outTexture.height);
                 this.PublishMessage(this.Topics[0], UnityEngine.JsonUtility.ToJson(img, true));
-                Debug.Log("$MQTT image sended.");
             }
             yield return new WaitForEndOfFrame();
 

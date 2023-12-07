@@ -19,7 +19,7 @@ namespace MQTT.Models
         public virtual void OnConnectionEvent()
         {
             foreach(string topic in this.Topics)
-                this._mqttCC.SubscribeTopic(topic, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE);
+                this._mqttCC.SubscribeTopic(topic, MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE);
 
             this._process = true;
         }

@@ -68,12 +68,12 @@ namespace MQTT
 
         public void Publish(string topic, string message)
         {
-            base.client.Publish(topic, System.Text.Encoding.UTF8.GetBytes(message), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            base.client.Publish(topic, System.Text.Encoding.UTF8.GetBytes(message), MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE, false);
         }
 
         public void Publish(string topic, byte[] message)
         {
-            base.client.Publish(topic, message, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            base.client.Publish(topic, message, MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE, false);
         }
 
         public void AddListenner(MQTTListenner listenner)
@@ -251,6 +251,8 @@ namespace MQTT
                 this._eventMessages.Clear();
                 this._eventTopics.Clear();
             }
+
+            base.SubscribeTopics();
         }
 
         private void OnEnable()
