@@ -15,7 +15,7 @@ namespace MQTT.Models
     {
         private static string[] TOPICS = new string[] { "device/holo/image" };
 
-        private Action _processors;
+        private Action<ReferenceModels.Image> _processors;
 
         // deprecated
         [Header("Stream")]
@@ -27,7 +27,7 @@ namespace MQTT.Models
         private Coroutine _curCoroutine;
 
         public override string[] Topics => TOPICS;
-        public Action Processors
+        public Action<ReferenceModels.Image> Processors
         {
             set => this._processors += value;
         }
@@ -36,6 +36,7 @@ namespace MQTT.Models
 
         public override void ProcessMessage(string topic, string message)
         {
+            Debug.Log("$MQTT image listened.");
             if (!this._isListenning)
                 return;
 
@@ -51,8 +52,6 @@ namespace MQTT.Models
 
         private IEnumerator Listenning(string topic, string message)
         {
-            yield return new WaitForEndOfFrame();
-
             ReferenceModels.Image img = null;
             try
             {
@@ -60,32 +59,28 @@ namespace MQTT.Models
             }
             catch (Exception e)
             {
-                Debug.Log("MQTT ${topic} ERROR:\tnão é possível converter uma mensagem recebida.");
+                Debug.LogError("MQTT ${topic} ERROR:\tnão é possível converter uma mensagem recebida.");
                 this.StopListenning();
             }
             Debug.Log($"MQTT ${topic} RECEIVE:\n{img.ToString()}.");
 
             this._processors?.Invoke(img);
             this._isListenning = true;
-
-            //if(this._texture.width != img.Width || this._texture.height != img.Height)
-            //{
-            //    this._texture = ImageCores.Utils.TextureUtil.ReinitializeTexture(this._texture, img.Width, img.Height);
-            //}
-            //this._texture.LoadImage(img.ImgBytes);
-            //this._texture.Apply();
-            //
-            //display.texture = this._texture;
-            //yield return new WaitForEndOfFrame();
-            //this._isListenning = true;
+            yield return new WaitForEndOfFrame();
         }
 
-        public override void OnClientSetup()
+        public override void OnConnectionEvent()
         {
-            base.MQTTCC.AddListenner(this);
+            base.OnConnectionEvent();
+            base._mqttCC.AddListenner(this);
+            this._isListenning = true;
+        }
 
-            foreach (string topic in this.Topics)
-                base.MQTTCC.SubscribeTopic(topic, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE);
+        public override void OnDisconnectionEvent()
+        {
+            base.OnDisconnectionEvent();
+            base._mqttCC.RemoveListenner(this);
+            this._isListenning = false;
         }
 
         protected override void Awake()

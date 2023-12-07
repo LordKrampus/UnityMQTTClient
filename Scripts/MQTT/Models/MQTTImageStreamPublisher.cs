@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using ReferenceModels;
 using ImageCores.TextureEnhancement;
 using static UnityEngine.Rendering.DebugUI;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace MQTT.Models 
 {
@@ -66,9 +67,6 @@ namespace MQTT.Models
         {
             base.Awake();
 
-            if (this.cam == null || this.display == null)
-                Debug.Log("Error raise on Inspector - object(s) reference(s) needed.");
-
             ImageCores.Utils.TextureUtil.ReinitializeTexture(ref this._render, this.cam.pixelWidth, this.cam.pixelHeight, true);
             ImageCores.Utils.TextureUtil.ReinitializeTexture(ref this._outTexture, 1, 1, true);
             this._texture = ImageCores.Utils.TextureUtil.ReinitializeTexture(this._texture, 1, 1);
@@ -107,7 +105,7 @@ namespace MQTT.Models
             Graphics.Blit(this._scaler.Enhance(this._render), this._outTexture);
             yield return new WaitForEndOfFrame();
 
-            if (base.MQTTCC.IsConnected)
+            if (Process)
             {
                 RenderTexture.active = this._outTexture;
                 this._texture.ReadPixels(new Rect(0, 0, this._outTexture.width, this._outTexture.height), 0, 0);
@@ -116,6 +114,7 @@ namespace MQTT.Models
 
                 ReferenceModels.Image img = new ReferenceModels.Image(bytesColors, this._outTexture.width, this._outTexture.height);
                 this.PublishMessage(this.Topics[0], UnityEngine.JsonUtility.ToJson(img, true));
+                Debug.Log("$MQTT image sended.");
             }
             yield return new WaitForEndOfFrame();
 

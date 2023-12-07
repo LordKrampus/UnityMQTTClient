@@ -50,22 +50,22 @@ namespace MQTT.Models
             Debug.Log($"MQTT ${topic} RECEIVE:\n{ort.ToString()}.");
 
             this._processors?.Invoke(ort);
-            
-            //Debug.Log(img.GetBytes());
-
-            //this.rvAvatar.transform.position = ort.Position;
-            //this.rvAvatar.transform.localRotation = ort.Rotation;
-
-            //this.position = ort.Position;
-            //this.rotation = ort.Rotation;
         }
 
-        public override void OnClientSetup()
+
+        public override void OnConnectionEvent()
         {
-            base.MQTTCC.AddListenner(this);
+            base.OnConnectionEvent();
+            base._mqttCC.AddListenner(this);
 
             foreach (string topic in this.Topics)
-                base.MQTTCC.SubscribeTopic(topic, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE);
+                base._mqttCC.SubscribeTopic(topic, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE);
+        }
+
+        public override void OnDisconnectionEvent()
+        {
+            base.OnDisconnectionEvent();
+            base._mqttCC.RemoveListenner(this);
         }
 
         protected override void Awake()

@@ -8,7 +8,7 @@ namespace MQTT.Models
         public virtual void PublishMessage(string topic, string message)
         {
             //Debug.Log($".MQTT $publishing ({topic}):\n{message}");
-            this.MQTTCC.Publish(topic, message);
+            base._mqttCC.Publish(topic, message);
         }
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using ReferenceModels;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace MQTT.Models
 {
@@ -23,6 +24,19 @@ namespace MQTT.Models
             base.PublishMessage(topic, message);
         }
 
+        public override void OnConnectionEvent()
+        {
+            base.OnConnectionEvent();
+
+            foreach (string topic in this.Topics)
+                base._mqttCC.SubscribeTopic(topic, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE);
+        }
+
+        public override void OnDisconnectionEvent()
+        {
+            base.OnDisconnectionEvent();
+        }
+
         protected override void Awake()
         {
             base.Awake();
@@ -33,7 +47,7 @@ namespace MQTT.Models
 
         private void LateUpdate()
         {
-            if (base.MQTTCC.IsConnected)
+            if (base.Process)
             {
                 Transform playerT = player.transform;
                 Vector3 position = playerT.position;
